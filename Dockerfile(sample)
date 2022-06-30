@@ -1,0 +1,22 @@
+# Add resource: Golang environment
+FROM golang
+
+# Define project location: Define where the project should be placed inside the container. After creating /app, set WORKDIR to this.
+RUN     mkdir -p /app
+WORKDIR /app
+
+# Add project
+# Copy the entire project into the container.
+COPY . .
+
+# Download the dependent packages
+# Must do it before starting the building project.
+# Download it according to the package version defined in go.mod and go.sum through go mod download
+# RUN     go mod download
+
+# Pack
+# -o specifies the built binary as app
+RUN    go build -o app
+
+# Entrypoint
+ENTRYPOINT ["./app"]
