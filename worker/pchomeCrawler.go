@@ -13,6 +13,8 @@ import (
 	"shopping_website/sql"
 )
 
+const pchomeServer = "https://ecshweb.pchome.com.tw"
+
 type PChomeQuery struct {
 	keyword string
 }
@@ -41,7 +43,7 @@ func NewPChomeQuery(keyword string) *PChomeQuery {
 func FindMaxPchomePage(keyword string) int {
 	var client = &http.Client{Timeout: 10 * time.Second}
 
-	request, err := http.NewRequest("GET", "http://ecshweb.pchome.com.tw/search/v3.3/all/results?sort=rnk", nil)
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s/search/v3.3/all/results?sort=rnk", pchomeServer), nil)
 	if err != nil {
 		fmt.Println("Can not generate request")
 		fmt.Println(err)
@@ -75,7 +77,7 @@ func (q *PChomeQuery) Crawl(page int, finishQuery chan bool, newProducts chan *s
 	//  minPrice := 10000
 	//  maxPrice := 30000
 
-	request, err := http.NewRequest("GET", "http://ecshweb.pchome.com.tw/search/v3.3/all/results?sort=rnk", nil)
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s/search/v3.3/all/results?sort=rnk", pchomeServer), nil)
 	if err != nil {
 		fmt.Println("Can not generate request")
 		fmt.Println(err)

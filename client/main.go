@@ -2,31 +2,33 @@
 package main
 
 import (
-	// "context"
+	"context"
+	"encoding/json"
 	"html/template"
-	// "io"
+	"io"
 	"log"
 	"net/http"
+	"os"
 
-	// "sort"
+	"sort"
 
 	pb "shopping_website/product"
 
 	"github.com/julienschmidt/httprouter"
 	uuid "github.com/satori/go.uuid"
-	// "google.golang.org/grpc"
+	"google.golang.org/grpc"
 )
 
 var tpl *template.Template
 
 const session = "session"
 
-// type sortMethod string
+type sortMethod string
 
-// const (
-// 	lessFirst   sortMethod = "lessFirst"
-// 	higherFirst sortMethod = "higherFirst"
-// )
+const (
+	lessFirst   sortMethod = "lessFirst"
+	higherFirst sortMethod = "higherFirst"
+)
 
 type searchResult struct {
 	Title  string
@@ -62,50 +64,58 @@ func index(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 func search(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	keyWord := req.FormValue("keyWord")
 
-	// // connect to GRPC service
-	// conn, err := grpc.Dial("server:8081", grpc.WithInsecure()) // [name of server container]:8081
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer conn.Close()
+	// Open the config.
+	jsonFile, err := os.Open("config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer jsonFile.Close()
 
-	// client := pb.NewUserServiceClient(conn)
-	// getProductClient, err := client.GetProduct(context.Background(), &pb.UserRequest{KeyWord: keyWord})
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	// Parse config
+	var config map[string]string
+	if err := json.NewDecoder(jsonFile).Decode(&config); err != nil {
+		log.Fatal(err)
+	}
 
-	// var result []*pb.UserResponse
+	// connect to GRPC service
+	port := config["host_ip"] // [name of server container]:8081  e.g.: "server:8081"
+	conn, err := grpc.Dial(port, grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
 
-	// // receive
-	// for {
-	// 	reply, err := getProductClient.Recv()
-	// 	if err == io.EOF {
-	// 		log.Println("Done")
-	// 		break
-	// 	}
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	log.Printf("reply : %v\n", reply)
-	// 	result = append(result, reply)
-	// }
+	client := pb.NewProductServiceClient(conn)
+	getProductClient, err := client.GetProductInfo(context.Background(), &pb.ProductRequest{KeyWord: keyWord})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// sort.Slice(result, func(i, j int) bool { return result[i].Price < result[j].Price })
+	var result []*pb.ProductResponse
 
-	tmpData := pb.ProductResponse{Name: "Neko", Price: 50, ImageURL: "https://aaa.com", ProductURL: "https://bbb.com"}
-	result := []*pb.ProductResponse{&tmpData}
+	// receive
+	for {
+		reply, err := getProductClient.Recv()
+		if err == io.EOF {
+			log.Println("Done")
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("reply : %v\n", reply)
+		result = append(result, reply)
+	}
+
+	sort.Slice(result, func(i, j int) bool { return result[i].Price < result[j].Price })
 
 	data := &searchResult{
 		Title:  "Search result: " + keyWord,
 		Result: result,
 	}
 
-	err := tpl.ExecuteTemplate(w, "result.gohtml", data)
+	err = tpl.ExecuteTemplate(w, "result.gohtml", data)
 	HandleError(w, err)
-
-	// err = tpl.ExecuteTemplate(w, "result.gohtml", data)
-	// HandleError(w, err)
 
 	sess, err := req.Cookie(session)
 	if err != nil {

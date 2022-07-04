@@ -9,7 +9,6 @@ import (
 
 	"shopping_website/model"
 	pb "shopping_website/product"
-	"shopping_website/sql"
 	"shopping_website/worker"
 )
 
@@ -25,31 +24,33 @@ type ProductGRPC struct {
 }
 
 func (s *Server) GetProductInfo(in *pb.ProductRequest, stream pb.ProductService_GetProductInfoServer) error {
+	log.Println("Test 1")
 	log.Println("Search for", in.KeyWord)
 
-	// Search in the database.
-	products, err := sql.Select(in.KeyWord)
-	if err != nil {
-		return err
-	}
-
-	// Output it directly, if there are data in the database.
-	if len(products) > 0 {
-		// Push the data to client from the database.
-		for _, product := range products {
-			err := stream.Send(&pb.ProductResponse{
-				Name:       product.Name,
-				Price:      int32(product.Price),
-				ImageURL:   product.ImageURL,
-				ProductURL: product.ProductURL,
-			})
-			if err != nil {
-				log.Println("client closed")
-				return err
-			}
-		}
-		return nil
-	}
+	// In order to use the AWS free version, it must be commented out.
+	// // Search in the database.
+	// products, err := sql.Select(in.KeyWord)
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// // Output it directly, if there are data in the database.
+	// if len(products) > 0 {
+	// 	// Push the data to client from the database.
+	// 	for _, product := range products {
+	// 		err := stream.Send(&pb.ProductResponse{
+	// 			Name:       product.Name,
+	// 			Price:      int32(product.Price),
+	// 			ImageURL:   product.ImageURL,
+	// 			ProductURL: product.ProductURL,
+	// 		})
+	// 		if err != nil {
+	// 			log.Println("client closed")
+	// 			return err
+	// 		}
+	// 	}
+	// 	return nil
+	// }
 
 	var p ProductGRPC
 	p.Products = make(chan pb.ProductResponse, 200)
@@ -105,7 +106,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	// Start the GRPC service.
 	grpcServer := grpc.NewServer()
 	pb.RegisterProductServiceServer(grpcServer, &Server{})

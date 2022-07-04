@@ -60,14 +60,14 @@ func (q *MomoQuery) Crawl(page int, finishQuery chan bool, newProducts chan *sql
 		tempProduct.ImageURL = e.ChildAttr("img.goodsImg", "src")
 		query, err := url.Parse(tempProduct.ProductURL)
 		if err != nil {
-			log.Println("Failed to find Product Url of %s: %v", tempProduct.Name, err)
+			log.Printf("Failed to find Product Url of %s: %v", tempProduct.Name, err)
 		}
 		querys := query.Query()
 		if tempId, ok := querys["i_code"]; ok {
 			tempProduct.ProductID = tempId[0]
 		}
 		if tempProduct.ProductID == "" {
-			log.Println("Failed to find Product Url of %s: %v", tempProduct.Name, err)
+			log.Printf("Failed to find Product Url of %s: %v", tempProduct.Name, err)
 		}
 		newProducts <- &tempProduct
 

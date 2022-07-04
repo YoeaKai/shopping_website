@@ -56,9 +56,12 @@ func Queue(ctx context.Context, keyWord string, pProduct chan pb.ProductResponse
 		for product := range newProducts {
 			// Insert the data to the database.
 			product.Word = keyWord
-			if err := sql.Insert(*product); err != nil {
-				log.Println(err)
-			}
+
+			// In order to use the AWS free version, it must be commented out.
+			// if err := sql.Insert(*product); err != nil {
+			// 	log.Println(err)
+			// }
+
 			// Push the data to grpc output.
 			pProduct <- pb.ProductResponse{
 				Name:       product.Name,
