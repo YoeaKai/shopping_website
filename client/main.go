@@ -78,7 +78,7 @@ func search(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	}
 
 	// connect to GRPC service
-	port := config["host_ip"] // [name of server container]:8081  e.g.: "server:8081"
+	port := config["host_ip"] // [name of process of server container]:8081  e.g.: "server:8081"
 	conn, err := grpc.Dial(port, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)

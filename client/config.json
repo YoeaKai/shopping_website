@@ -1,4 +1,4 @@
 {
     "host_ip":"0.0.0.0:8081", 
-    "server_ip":"server:8081"
+    "process_ip":"server:8081"
 }

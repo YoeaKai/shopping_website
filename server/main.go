@@ -24,7 +24,6 @@ type ProductGRPC struct {
 }
 
 func (s *Server) GetProductInfo(in *pb.ProductRequest, stream pb.ProductService_GetProductInfoServer) error {
-	log.Println("Test 1")
 	log.Println("Search for", in.KeyWord)
 
 	// In order to use the AWS free version, it must be commented out.
