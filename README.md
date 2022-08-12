@@ -1,6 +1,6 @@
 # shopping_website
 
-設計一個比價網 gRPC Service，提供以下 API，讓用戶同時搜尋不同購物網站：
+這是一個基於 gRPC Service 的比價網，使用 Docker 容器化後 deploy 到 AWS 上運行，讓用戶同時搜尋不同購物網站：
 其中，Request 是商品的關鍵字；Result 包含名稱、價錢、圖片連結、商品連結
 需求
 * 至少兩個購物網站
